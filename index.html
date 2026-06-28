@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Google / Alphabet — CLV Prediction Dashboard H1 2026</title>
+<style>
+  :root{
+    --bg:#0D1117;--bg2:#161B22;--bg3:#1C2333;--bg4:#21262D;
+    --blue:#58A6FF;--teal:#39D353;--yellow:#E3B341;--red:#F85149;--purple:#BC8CFF;
+    --orange:#FFA657;--border:#30363D;--text:#C9D1D9;--subtext:#8B949E;
+    --white:#FFFFFF;--card:#1C2333;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.5;}
+  /* ── HEADER ── */
+  .header{background:linear-gradient(135deg,#0D1117 0%,#1A237E 60%,#283593 100%);
+    border-bottom:2px solid var(--blue);padding:24px 32px 20px;display:flex;
+    justify-content:space-between;align-items:flex-end;}
+  .header h1{font-size:22px;font-weight:700;color:var(--white);letter-spacing:.5px;}
+  .header .sub{color:var(--subtext);font-size:12px;margin-top:4px;}
+  .badge{background:#1A237E;border:1px solid var(--blue);border-radius:20px;
+    padding:4px 14px;font-size:11px;color:var(--blue);}
+  .prepared{color:var(--yellow);font-size:11px;font-weight:600;text-align:right;}
+  .disclaimer{font-size:10px;color:var(--subtext);font-style:italic;text-align:right;max-width:340px;}
+  /* ── LAYOUT ── */
+  .container{padding:20px 28px;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;}
+  .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:16px 18px;position:relative;overflow:hidden;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .kpi-card.blue::before{background:var(--blue);}
+  .kpi-card.teal::before{background:var(--teal);}
+  .kpi-card.yellow::before{background:var(--yellow);}
+  .kpi-card.purple::before{background:var(--purple);}
+  .kpi-card.orange::before{background:var(--orange);}
+  .kpi-label{font-size:11px;color:var(--subtext);font-weight:600;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;}
+  .kpi-value{font-size:26px;font-weight:700;color:var(--white);}
+  .kpi-delta{font-size:11px;margin-top:5px;}
+  .kpi-delta.up{color:var(--teal);}
+  .kpi-delta.warn{color:var(--yellow);}
+  /* ── SECTION LABELS ── */
+  .sec-title{font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;
+    letter-spacing:.8px;margin:0 0 12px;border-left:3px solid var(--blue);padding-left:10px;}
+  /* ── CHARTS GRID ── */
+  .charts-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;margin-bottom:22px;}
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;}
+  .chart-full{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:22px;}
+  /* ── BAR CHART ── */
+  .bar-chart{display:flex;align-items:flex-end;gap:10px;height:160px;padding-top:10px;}
+  .bar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;}
+  .bar-fill{width:100%;border-radius:4px 4px 0 0;transition:height .3s;min-height:4px;position:relative;}
+  .bar-label{font-size:9px;color:var(--subtext);margin-top:5px;text-align:center;line-height:1.2;}
+  .bar-val{font-size:10px;color:var(--white);font-weight:700;position:absolute;top:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;}
+  /* ── HEATMAP ── */
+  .heatmap{width:100%;}
+  .hm-row{display:flex;gap:4px;margin-bottom:4px;align-items:center;}
+  .hm-label{width:120px;font-size:10px;color:var(--subtext);flex-shrink:0;text-align:right;padding-right:8px;}
+  .hm-cell{flex:1;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;color:var(--white);}
+  .hm-col-headers{display:flex;gap:4px;margin-bottom:4px;padding-left:128px;}
+  .hm-col-h{flex:1;font-size:9px;color:var(--subtext);text-align:center;}
+  /* ── LINE CHART ── */
+  svg.linechart{width:100%;height:160px;overflow:visible;}
+  /* ── TABLE ── */
+  .data-table{width:100%;border-collapse:collapse;font-size:11px;}
+  .data-table th{background:#1A237E;color:var(--white);padding:8px 10px;text-align:left;
+    font-size:10px;font-weight:700;letter-spacing:.5px;border:1px solid var(--border);}
+  .data-table td{padding:7px 10px;border:1px solid var(--border);color:var(--text);}
+  .data-table tr:nth-child(even) td{background:#1C2333;}
+  .data-table tr:nth-child(odd) td{background:#0D1117;}
+  .data-table tr:last-child td{background:#1A237E55;font-weight:700;color:var(--white);}
+  .pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;}
+  .pill-green{background:#1a3a1a;color:var(--teal);border:1px solid var(--teal);}
+  .pill-yellow{background:#3a2a00;color:var(--yellow);border:1px solid var(--yellow);}
+  .pill-red{background:#3a0000;color:var(--red);border:1px solid var(--red);}
+  /* ── FOOTER ── */
+  .footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;
+    justify-content:space-between;align-items:center;background:#0D1117;}
+  .footer p{font-size:10px;color:var(--subtext);font-style:italic;}
+  .footer .prep{font-size:11px;color:var(--yellow);font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════════════ -->
+<div class="header">
+  <div>
+    <h1>🔵 Google / Alphabet &nbsp;—&nbsp; CLV Prediction Dashboard</h1>
+    <div class="sub">H1 2026 &nbsp;|&nbsp; Jan–Jun 2026 &nbsp;|&nbsp; Revenue in USD $mm &nbsp;|&nbsp; Modeled Analyst Dataset</div>
+    <div style="margin-top:8px"><span class="badge">▲ Alphabet Q1 2026 Anchored</span></div>
+  </div>
+  <div style="text-align:right">
+    <div class="prepared">Prepared by: Rahima Akter Diti</div>
+    <div class="disclaimer">This analysis is for demonstration purposes based on modeled data. Internal Google/Alphabet disclosures may differ.</div>
+  </div>
+</div>
+
+<!-- ═══ KPI STRIP ═══════════════════════════════════════════════════════════ -->
+<div class="container">
+  <div class="kpi-grid">
+    <div class="kpi-card blue">
+      <div class="kpi-label">Total H1 Revenue</div>
+      <div class="kpi-value">$224,000</div>
+      <div class="kpi-delta up">↑ 19.9% MoM (Jan→Jun)</div>
+    </div>
+    <div class="kpi-card teal">
+      <div class="kpi-label">Contribution Profit</div>
+      <div class="kpi-value">$102,092</div>
+      <div class="kpi-delta up">↑ Margin: 45.6%</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Predicted H2 2026 CLV</div>
+      <div class="kpi-value">$285,000</div>
+      <div class="kpi-delta up">↑ +27.2% vs H1</div>
+    </div>
+    <div class="kpi-card yellow">
+      <div class="kpi-label">Blended Churn Risk</div>
+      <div class="kpi-value">13.5%</div>
+      <div class="kpi-delta warn">⚠ Other Bets: 100%</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">Revenue at Risk ($mm)</div>
+      <div class="kpi-value">$31,891</div>
+      <div class="kpi-delta warn">⚠ 14.2% of H1 Revenue</div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION 1: CLV Distribution by Segment ════════════════════════════ -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="sec-title">CLV Distribution by Segment  ($mm Revenue)</div>
+      <div class="bar-chart" id="barChart"></div>
+      <div style="margin-top:12px;font-size:10px;color:var(--subtext);">
+        Source: Summary_by_Category sheet &nbsp;|&nbsp; Alphabet Q1 2026 / SEC Exhibit
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="sec-title">Predicted CLV vs Net CLV by Segment ($mm)</div>
+      <div id="clvComparChart" style="height:160px;display:flex;align-items:flex-end;gap:8px;padding-top:16px;"></div>
+      <div style="margin-top:8px;display:flex;gap:14px;font-size:10px;">
+        <span style="color:var(--blue)">■ Predicted CLV</span>
+        <span style="color:var(--teal)">■ Net CLV (after CAC)</span>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--subtext);">Source: CLV Prediction Model sheet</div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION 2: Retention Heatmap ══════════════════════════════════════ -->
+  <div class="chart-full">
+    <div class="sec-title">Retention Rate Heatmap — by Channel × Segment (%)</div>
+    <div class="hm-col-headers" id="hmColHeaders"></div>
+    <div id="heatmap"></div>
+    <div style="margin-top:12px;display:flex;gap:18px;font-size:10px;flex-wrap:wrap;">
+      <span>Color scale: </span>
+      <span style="background:#1a4a1a;padding:2px 10px;border-radius:3px;color:var(--teal);">≥90% Excellent</span>
+      <span style="background:#3a3a00;padding:2px 10px;border-radius:3px;color:var(--yellow);">80-89% Good</span>
+      <span style="background:#3a1500;padding:2px 10px;border-radius:3px;color:var(--orange);">70-79% Fair</span>
+      <span style="background:#3a0000;padding:2px 10px;border-radius:3px;color:var(--red);">&lt;70% At Risk</span>
+    </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--subtext);">Source: Service_Rating sheet / Cohort & Retention model</div>
+  </div>
+
+  <!-- ═══ SECTION 3: Projected Revenue vs Actuals ═══════════════════════════ -->
+  <div class="chart-full">
+    <div class="sec-title">Projected Revenue vs Actuals  |  H1 Actuals + H2 2026 Forecast ($mm)</div>
+    <svg class="linechart" id="lineChart" viewBox="0 0 880 170"></svg>
+    <div style="margin-top:10px;display:flex;gap:22px;font-size:10px;">
+      <span style="color:var(--blue)">── Actual Revenue</span>
+      <span style="color:var(--yellow)">-- Projected / Forecast</span>
+      <span style="color:var(--subtext)">H2 2026 shaded region = model forecast</span>
+    </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--subtext);">Source: Summary_by_Month sheet / CLV model projection</div>
+  </div>
+
+  <!-- ═══ SECTION 4: Full Segment Table ════════════════════════════════════ -->
+  <div class="chart-full">
+    <div class="sec-title">CLV Intelligence Table — Full Segment Detail</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th>H1 Revenue ($mm)</th>
+          <th>Margin %</th>
+          <th>Predicted CLV ($mm)</th>
+          <th>Churn Risk %</th>
+          <th>CAC Ratio</th>
+          <th>Churn Risk Tier</th>
+          <th>NPS (Avg)</th>
+          <th>CLV Grade</th>
+          <th>Data Source</th>
+        </tr>
+      </thead>
+      <tbody id="segTable"></tbody>
+    </table>
+    <div style="margin-top:10px;font-size:10px;color:var(--subtext);">
+      Source: Alphabet Q1 2026 Earnings / SEC Exhibit 99.1 / 2025 10-K / Service_Rating sheet
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ══════════════════════════════════════════════════════════════ -->
+<div class="footer">
+  <p>This analysis is for demonstration purposes based on modeled data. Internal Google/Alphabet disclosures may differ. &nbsp;|&nbsp; Data: Public official sources + modeled allocation.</p>
+  <span class="prep">Prepared by: Rahima Akter Diti</span>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const segments = [
+  {name:"Search & Other Ads",   rev:123474.6, margin:0.62, clv:852240, netClv:741248, churn:0.08, cac:"1.8x", nps:47, grade:"AAA", status:"Low"},
+  {name:"YouTube Ads",           rev:22245.84, margin:0.35, clv:53580,  netClv:47233,  churn:0.18, cac:"2.4x", nps:40, grade:"AA",  status:"Medium"},
+  {name:"Network Ads",           rev:13434.54, margin:0.24, clv:18844,  netClv:16424,  churn:0.22, cac:"3.1x", nps:37, grade:"A",   status:"Medium"},
+  {name:"Subs/Plat/Dev",         rev:28946.04, margin:0.30, clv:48690,  netClv:42131,  churn:0.20, cac:"2.6x", nps:38, grade:"AA",  status:"Medium"},
+  {name:"Google Cloud",          rev:33672.66, margin:0.20, clv:45000,  netClv:38880,  churn:0.12, cac:"2.2x", nps:38, grade:"AA",  status:"Low"},
+  {name:"Other Bets",            rev:2226.32,  margin:-0.40,clv:0,      netClv:-1780,  churn:1.00, cac:"N/A",  nps:22, grade:"C",   status:"Critical"},
+];
+
+const colors = ["#58A6FF","#39D353","#BC8CFF","#FFA657","#E3B341","#F85149"];
+
+// ── BAR CHART ─────────────────────────────────────────────────────────────
+const maxRev = Math.max(...segments.map(s=>s.rev));
+const barChart = document.getElementById('barChart');
+segments.forEach((s,i)=>{
+  const pct = (s.rev / maxRev * 140).toFixed(1);
+  barChart.innerHTML += `
+    <div class="bar-wrap">
+      <div class="bar-fill" style="height:${pct}px;background:${colors[i]};">
+        <span class="bar-val">$${(s.rev/1000).toFixed(0)}B</span>
+      </div>
+      <div class="bar-label">${s.name.split(' ').slice(0,2).join('<br>')}</div>
+    </div>`;
+});
+
+// ── CLV COMPARISON BARS ──────────────────────────────────────────────────
+const maxClv = Math.max(...segments.map(s=>Math.max(s.clv,0)));
+const clvDiv = document.getElementById('clvComparChart');
+segments.forEach((s,i)=>{
+  if(s.clv<=0){ clvDiv.innerHTML+=`<div style="flex:1;text-align:center;font-size:9px;color:var(--red);">${s.name.split(' ')[0]}<br>N/A</div>`; return; }
+  const h1 = (s.clv/maxClv*130).toFixed(1);
+  const h2 = (Math.max(s.netClv,0)/maxClv*130).toFixed(1);
+  clvDiv.innerHTML += `
+    <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;">
+      <div style="display:flex;align-items:flex-end;gap:3px;height:130px;">
+        <div style="width:16px;background:var(--blue);border-radius:3px 3px 0 0;height:${h1}px;position:relative;">
+          <span style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--blue);white-space:nowrap;">${(s.clv/1000).toFixed(0)}B</span>
+        </div>
+        <div style="width:16px;background:var(--teal);border-radius:3px 3px 0 0;height:${h2}px;"></div>
+      </div>
+      <div style="font-size:8px;color:var(--subtext);text-align:center;line-height:1.2;">${s.name.split('/')[0].trim().split(' ').slice(0,2).join(' ')}</div>
+    </div>`;
+});
+
+// ── HEATMAP ──────────────────────────────────────────────────────────────
+const channels = ["Subscription Platform","Partner Network","Device Retail","Advertising Platform"];
+const segCols  = ["Search","YouTube","Net Ads","Sub/Dev","Cloud","Other"];
+const retData  = [
+  [0.94,0.84,0.80,0.82,0.90,0.00],
+  [0.92,0.82,0.78,0.80,0.88,0.00],
+  [0.91,0.81,0.77,0.80,0.87,0.00],
+  [0.93,0.83,0.79,0.81,0.89,0.00],
+];
+function cellColor(v){
+  if(v===0)return"#2a0000";
+  if(v>=0.90)return"#1a4a1a";
+  if(v>=0.80)return"#3a3a00";
+  if(v>=0.70)return"#3a1500";
+  return"#3a0000";
+}
+function textColor(v){
+  if(v===0)return"#F85149";
+  if(v>=0.90)return"#39D353";
+  if(v>=0.80)return"#E3B341";
+  if(v>=0.70)return"#FFA657";
+  return"#F85149";
+}
+
+const hmColH = document.getElementById('hmColHeaders');
+segCols.forEach(s=>{ hmColH.innerHTML+=`<div class="hm-col-h">${s}</div>`; });
+
+const hm = document.getElementById('heatmap');
+channels.forEach((ch,i)=>{
+  let row=`<div class="hm-row"><div class="hm-label">${ch}</div>`;
+  retData[i].forEach(v=>{
+    const bg=cellColor(v), tc=textColor(v);
+    row+=`<div class="hm-cell" style="background:${bg};color:${tc};">${v===0?'N/A':(v*100).toFixed(0)+'%'}</div>`;
+  });
+  row+='</div>';
+  hm.innerHTML+=row;
+});
+
+// ── LINE CHART (SVG) ─────────────────────────────────────────────────────
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const actuals = [35206.73,32401.58,36952.18,37258.38,39952.82,42228.31,null,null,null,null,null,null];
+const projected= [34800,33000,36500,37000,39500,41800,43850,45050,46300,47600,49000,50350];
+const svg = document.getElementById('lineChart');
+const W=880, H=150, PAD={l:44,r:20,t:20,b:28};
+const allVals=[...actuals.filter(v=>v!=null),...projected];
+const minV=28000, maxV=55000;
+const xStep=(W-PAD.l-PAD.r)/(months.length-1);
+function px(i){return PAD.l+i*xStep;}
+function py(v){return PAD.t+(maxV-v)/(maxV-minV)*(H-PAD.t-PAD.b);}
+
+// Forecast shade
+const fx1=px(6), fxEnd=px(11);
+svg.innerHTML+=`<rect x="${fx1}" y="${PAD.t}" width="${fxEnd-fx1}" height="${H-PAD.t-PAD.b}" fill="#E3B34110" rx="2"/>`;
+svg.innerHTML+=`<text x="${fx1+4}" y="${PAD.t+11}" fill="#E3B341" font-size="9" font-family="Arial">H2 Forecast</text>`;
+
+// Grid lines
+for(let v=30000;v<=52000;v+=5000){
+  const y=py(v);
+  svg.innerHTML+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#21262D" stroke-width="1"/>`;
+  svg.innerHTML+=`<text x="${PAD.l-4}" y="${y+4}" fill="#8B949E" font-size="9" font-family="Arial" text-anchor="end">$${(v/1000).toFixed(0)}K</text>`;
+}
+
+// Projected line (dashed)
+let projPath="";
+projected.forEach((v,i)=>{ projPath+=(i===0?`M ${px(i)} ${py(v)}`:`L ${px(i)} ${py(v)}`); });
+svg.innerHTML+=`<path d="${projPath}" fill="none" stroke="#E3B341" stroke-width="2" stroke-dasharray="5,4"/>`;
+
+// Actual line
+let actPath="";
+actuals.forEach((v,i)=>{ if(v!=null){ actPath+=(actPath===''?`M ${px(i)} ${py(v)}`:`L ${px(i)} ${py(v)}`); } });
+svg.innerHTML+=`<path d="${actPath}" fill="none" stroke="#58A6FF" stroke-width="2.5"/>`;
+
+// Dots
+actuals.forEach((v,i)=>{
+  if(v!=null) svg.innerHTML+=`<circle cx="${px(i)}" cy="${py(v)}" r="4" fill="#58A6FF" stroke="#0D1117" stroke-width="1.5"/>`;
+});
+
+// Month labels
+months.forEach((m,i)=>{
+  svg.innerHTML+=`<text x="${px(i)}" y="${H-PAD.b+14}" fill="#8B949E" font-size="9" font-family="Arial" text-anchor="middle">${m}</text>`;
+});
+
+// Vertical divider
+svg.innerHTML+=`<line x1="${px(5.5)}" y1="${PAD.t}" x2="${px(5.5)}" y2="${H-PAD.b}" stroke="#30363D" stroke-width="1" stroke-dasharray="3,3"/>`;
+
+// ── SEGMENT TABLE ────────────────────────────────────────────────────────
+const tbody = document.getElementById('segTable');
+segments.forEach(s=>{
+  const statusPill = s.status==="Low"?'pill-green':s.status==="Medium"?'pill-yellow':'pill-red';
+  const gradePill  = s.grade==="AAA"||s.grade==="AA"?'pill-green':s.grade==="A"?'pill-yellow':'pill-red';
+  tbody.innerHTML+=`<tr>
+    <td><strong>${s.name}</strong></td>
+    <td style="text-align:right;">$${s.rev.toLocaleString()}</td>
+    <td style="text-align:right;">${(s.margin*100).toFixed(1)}%</td>
+    <td style="text-align:right;color:var(--blue);">${s.clv>0?'$'+s.clv.toLocaleString():'N/A'}</td>
+    <td style="text-align:right;">${(s.churn*100).toFixed(0)}%</td>
+    <td style="text-align:center;">${s.cac}</td>
+    <td style="text-align:center;"><span class="pill ${statusPill}">${s.status}</span></td>
+    <td style="text-align:center;">${s.nps}</td>
+    <td style="text-align:center;"><span class="pill ${gradePill}">${s.grade}</span></td>
+    <td style="font-size:9px;color:var(--subtext);">Alphabet Q1 2026 / SEC Exhibit / 10-K</td>
+  </tr>`;
+});
+// Total row
+tbody.innerHTML+=`<tr>
+  <td>TOTAL / WEIGHTED AVG</td>
+  <td style="text-align:right;">$224,000</td>
+  <td style="text-align:right;">45.6%</td>
+  <td style="text-align:right;color:var(--yellow);">$1,018,354</td>
+  <td style="text-align:right;">13.5% (wtd)</td>
+  <td style="text-align:center;">2.1x</td>
+  <td></td>
+  <td style="text-align:center;">40</td>
+  <td></td>
+  <td>All sources</td>
+</tr>`;
+</script>
+</body>
+</html>
